@@ -12,6 +12,7 @@ import (
 
 type Reporter interface {
 	ohDearWhatHappened(thisHappened whatHappened)
+	close()
 }
 
 type reporter struct {
@@ -51,6 +52,10 @@ func (r reporter) ohDearWhatHappened(thisHappened whatHappened) {
 			Key:   []byte(uuid.New().String()),
 			Value: message,
 		})
+}
+
+func (r reporter) close() {
+	r.OhDear.Close()
 }
 
 func createLumiErrorReporter(source string, brokers []string, errorTopic string, isLocal bool) (reporterToReturn Reporter, err error) {

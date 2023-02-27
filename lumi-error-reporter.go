@@ -11,7 +11,7 @@ import (
 )
 
 type Reporter interface {
-	OhDearWhatHappened(thisHappened whatHappened)
+	OhDearWhatHappened(message string, code string, severity string, additionalInfo string)
 	Close()
 }
 
@@ -20,13 +20,6 @@ type reporter struct {
 	ERROR_TOPIC string
 	OhDear      *kafka.Writer
 	Source      string
-}
-
-type whatHappened struct {
-	Message        string `json:"message"`
-	Code           string `json:"code"`
-	Severity       string `json:"severity"`
-	AdditionalInfo string `json:"additionalInfo"`
 }
 
 type errorStructure struct {
@@ -38,19 +31,19 @@ type errorStructure struct {
 }
 
 //Sends error messages to ohDear topic
-func (r reporter) OhDearWhatHappened(thisHappened whatHappened) {
+func (r reporter) OhDearWhatHappened(message string, code string, severity string, additionalInfo string) {
 	es := errorStructure{
 		Source:         r.Source,
-		Message:        thisHappened.Message,
-		Code:           thisHappened.Code,
-		Severity:       thisHappened.Severity,
-		AdditionalInfo: thisHappened.AdditionalInfo,
+		Message:        message,
+		Code:           code,
+		Severity:       severity,
+		AdditionalInfo: additionalInfo,
 	}
-	message, _ := json.Marshal(es)
+	messageJson, _ := json.Marshal(es)
 	r.OhDear.WriteMessages(context.Background(),
 		kafka.Message{
 			Key:   []byte(uuid.New().String()),
-			Value: message,
+			Value: messageJson,
 		})
 }
 

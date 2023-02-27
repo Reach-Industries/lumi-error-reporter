@@ -11,8 +11,8 @@ import (
 )
 
 type Reporter interface {
-	ohDearWhatHappened(thisHappened whatHappened)
-	close()
+	OhDearWhatHappened(thisHappened whatHappened)
+	Close()
 }
 
 type reporter struct {
@@ -38,7 +38,7 @@ type errorStructure struct {
 }
 
 //Sends error messages to ohDear topic
-func (r reporter) ohDearWhatHappened(thisHappened whatHappened) {
+func (r reporter) OhDearWhatHappened(thisHappened whatHappened) {
 	es := errorStructure{
 		Source:         r.Source,
 		Message:        thisHappened.Message,
@@ -54,7 +54,7 @@ func (r reporter) ohDearWhatHappened(thisHappened whatHappened) {
 		})
 }
 
-func (r reporter) close() {
+func (r reporter) Close() {
 	r.OhDear.Close()
 }
 

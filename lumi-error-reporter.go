@@ -58,7 +58,7 @@ func (r reporter) close() {
 	r.OhDear.Close()
 }
 
-func createLumiErrorReporter(source string, brokers []string, errorTopic string, isLocal bool) (reporterToReturn Reporter, err error) {
+func CreateLumiErrorReporter(source string, brokers []string, errorTopic string, isLocal bool) (reporterToReturn Reporter, err error) {
 
 	err = validateReporterRequest(source, brokers, errorTopic)
 	if err != nil {

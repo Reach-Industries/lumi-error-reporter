@@ -57,7 +57,7 @@ func (r reporter) OhDearWhatHappened(message string, code string, severity strin
 				stack = append(stack, fmt.Sprintf("%+v", f))
 			}
 			// Only record the first 30 frames of the stacktrace
-			if i > 30 {
+			if i >= 30 {
 				break
 			}
 		}

@@ -4,7 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
@@ -28,9 +31,14 @@ type errorStructure struct {
 	Code           string `json:"code"`
 	Severity       string `json:"severity"`
 	AdditionalInfo string `json:"additionalInfo"`
+	Stacktrace     string `json:"stacktrace"`
 }
 
-//Sends error messages to ohDear topic
+type stackTracer interface {
+	StackTrace() errors.StackTrace
+}
+
+// Sends error messages to ohDear topic
 func (r reporter) OhDearWhatHappened(message string, code string, severity string, additionalInfo string) {
 	es := errorStructure{
 		Source:         r.Source,
@@ -39,7 +47,24 @@ func (r reporter) OhDearWhatHappened(message string, code string, severity strin
 		Severity:       severity,
 		AdditionalInfo: additionalInfo,
 	}
+
+	// Record stacktrace, ignoring this frame
+	err := errors.New(message)
+	stack := []string{}
+	if err, ok := err.(stackTracer); ok {
+		for i, f := range err.StackTrace() {
+			if i != 0 {
+				stack = append(stack, fmt.Sprintf("%+v", f))
+			}
+			// Only record the first 30 frames of the stacktrace
+			if i >= 30 {
+				break
+			}
+		}
+	}
+	es.Stacktrace = strings.Join(stack, "\n")
 	messageJson, _ := json.Marshal(es)
+
 	r.OhDear.WriteMessages(context.Background(),
 		kafka.Message{
 			Key:   []byte(uuid.New().String()),
